@@ -8,7 +8,7 @@ import 'package:dartson_test_project/parts.dart';
 void main() {
   var dson = new Dartson.JSON();
   dson.addTransformer(new DateTimeParser(), DateTime);
-  var items = dson.decode(
+  List items = dson.decode(
       '[{"name":"test","other":"blub","created":"2015-01-26 23:14:54.401"},{"name":"test2","created":"2015-01-23 00:00:00.000","children":[{"name":"child1"}]}]',
       new Model(), true);
 
@@ -21,7 +21,7 @@ void main() {
   print(dson.encode(items));
 
   var jsonStr = '{"modelName":"Part Model","object":false}';
-  var part = dson.decode(jsonStr, new PartModel());
+  PartModel part = dson.decode(jsonStr, new PartModel());
   print(part.modelName);
   print(part.object);
   print(dson.encode(part));
