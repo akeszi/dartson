@@ -256,12 +256,16 @@ class FileCompiler extends _ErrorCollector {
         Property dartEnt = _findDartsonProperty(member.metadata);
 
         // parse the type and the assigned arguments for generic types
-        var type = member.fields.type.name.name;
-        var typeArguments = [];
+        //var type = member.fields.type.name.name;
+        //var type = member.fields.type.type.name;
+        var typeString = member.fields.type.toString();
+        List<String> typeArguments = [];
 
-        if (member.fields.type.typeArguments != null) {
-          member.fields.type.typeArguments.arguments
-              .forEach((arg) => typeArguments.add(arg.name.name));
+        var regexp = new RegExp("^([^\<]+)(\<(.*)\>)?\$");
+        var match = regexp.firstMatch(typeString);
+        String type = match.group(1);
+        if (match.groupCount>2 && match.group(3) != null) {
+          typeArguments = match.group(3).split(",").map((String s)=>s.trim()).toList();
         }
 
         // run through all delegated variables
@@ -291,12 +295,15 @@ class FileCompiler extends _ErrorCollector {
         Property dartEnt = _findDartsonProperty(member.metadata);
 
         // parse the type and the assigned arguments for generic types
-        var type = member.returnType.name.name;
-        var typeArguments = [];
+//        var type = member.returnType.type.name;
+        var typeString = member.returnType.type.toString();
+        List<String> typeArguments = [];
 
-        if (member.returnType.typeArguments != null) {
-          member.returnType.typeArguments.arguments
-              .forEach((arg) => typeArguments.add(arg.name.name));
+        var regexp = new RegExp("^([^\<]+)(\<(.*)\>)?\$");
+        var match = regexp.firstMatch(typeString);
+        String type = match.group(1);
+        if (match.groupCount>2 && match.group(3) != null) {
+          typeArguments = match.group(3).split(",").map((String s)=>s.trim()).toList();
         }
 
         if (member.name.name.startsWith("_")) break SkipMember;
