@@ -256,17 +256,7 @@ class FileCompiler extends _ErrorCollector {
         Property dartEnt = _findDartsonProperty(member.metadata);
 
         // parse the type and the assigned arguments for generic types
-        //var type = member.fields.type.name.name;
-        //var type = member.fields.type.type.name;
-        var typeString = member.fields.type.toString();
-        List<String> typeArguments = [];
-
-        var regexp = new RegExp("^([^\<]+)(\<(.*)\>)?\$");
-        var match = regexp.firstMatch(typeString);
-        String type = match.group(1);
-        if (match.groupCount>2 && match.group(3) != null) {
-          typeArguments = match.group(3).split(",").map((String s)=>s.trim()).toList();
-        }
+        TypeDefinition typeDef = new TypeDefinition.fromSource(member.fields.type.toSource());
 
         // run through all delegated variables
         member.fields.variables.forEach((VariableDeclaration d) {
@@ -286,7 +276,7 @@ class FileCompiler extends _ErrorCollector {
           }
 
           list.add(new PropertyDefinition(
-              type, typeArguments, serializedName, d.name.name));
+              typeDef.type, typeDef.typeArguments, serializedName, d.name.name));
         });
       }
       // TODO (floitschG): review this
@@ -294,17 +284,8 @@ class FileCompiler extends _ErrorCollector {
       if (member is MethodDeclaration && member.isGetter) {
         Property dartEnt = _findDartsonProperty(member.metadata);
 
-        // parse the type and the assigned arguments for generic types
-//        var type = member.returnType.type.name;
-        var typeString = member.returnType.type.toString();
-        List<String> typeArguments = [];
-
-        var regexp = new RegExp("^([^\<]+)(\<(.*)\>)?\$");
-        var match = regexp.firstMatch(typeString);
-        String type = match.group(1);
-        if (match.groupCount>2 && match.group(3) != null) {
-          typeArguments = match.group(3).split(",").map((String s)=>s.trim()).toList();
-        }
+      // parse the type and the assigned arguments for generic types
+      TypeDefinition typeDef = new TypeDefinition.fromSource(member.returnType.toSource());
 
         if (member.name.name.startsWith("_")) break SkipMember;
 
@@ -320,7 +301,7 @@ class FileCompiler extends _ErrorCollector {
         }
 
         list.add(new PropertyDefinition(
-            type, typeArguments, serializedName, member.name.name));
+            typeDef.type, typeDef.typeArguments, serializedName, member.name.name));
       }
     });
 
@@ -693,4 +674,22 @@ class _ListTransformWriter extends _TypeTransformWriter {
     resp.add('}');
     return resp.join('\n');
   }
+}
+
+class TypeDefinition {
+
+  TypeDefinition.fromSource(String source) {
+    var regexp = new RegExp("^([^\<]+)(\<(.*)\>)?\$");
+    var match = regexp.firstMatch(source);
+    _type = match.group(1);
+    if (match.groupCount>2 && match.group(3) != null) {
+      _typeArguments = match.group(3).split(",").map((String s)=>s.trim()).toList();
+    }
+  }
+
+  String get type => _type;
+  List<String> get typeArguments => _typeArguments;
+
+  String _type;
+  List<String> _typeArguments = [];
 }
